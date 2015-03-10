@@ -31,26 +31,57 @@ public class Main {
         BigIntegerStringConverter converter = new BigIntegerStringConverter();
 
         try (BufferedReader reader = Files.newBufferedReader(path, charset)) {
-            passValuesIntoHashtable(allIntegers, converter, reader);
+            Hashtable hashtable = passValuesIntoHashtable(allIntegers, converter, reader);
+            boolean isItThere;
+            BigInteger t = new BigInteger("-10000");
+
+//            for (int i = -10000; i <= 10000; i++) {
+                int a = 0;
+                do {
+                    isItThere = false;
+                    BigInteger x = allIntegers[a];
+                    BigInteger y = t.subtract(x);
+                    BigInteger keyInBigIntForm = y.divide(new BigInteger("1000000"));
+                    String keyInStringForm = converter.toString(keyInBigIntForm);
+                    double key = Double.parseDouble(keyInStringForm);
+                    Object weFoundY = hashtable.get(key);
+                    if (weFoundY == null) {
+                        a++;
+                    } else {
+                        isItThere = true;
+                        System.out.println("Got it. a: " + a + "\n x: " + x + "\n y: " + y + "\n weFoundY: " + weFoundY
+                                + "\n keyInBigIntForm: " + keyInBigIntForm + "\n keyInStringForm: " + keyInStringForm
+                                + "\n key: " + key);
+                    }
+                    if (a == 999999) {
+                        System.out.println("Not found.");
+                        isItThere = true;
+                    }
+                } while (!isItThere);
+                t = t.add(BigInteger.ONE);
+//            }
+
         } catch (IOException x) {
             System.err.format("IOException: %s%n", x);
         }
     }
 
-    private static void passValuesIntoHashtable(BigInteger[] allIntegers, BigIntegerStringConverter converter, BufferedReader reader) throws IOException {
+    private static Hashtable passValuesIntoHashtable(BigInteger[] allIntegers, BigIntegerStringConverter converter, BufferedReader reader) throws IOException {
         String line;
         int i = 0;
-        Long l = 0L;
-        Hashtable<Long, BigInteger> hashtable = new Hashtable<>();
+        Double d = 0D;
+        Hashtable<Double, BigInteger> hashtable = new Hashtable<>();
 
         while ((line = reader.readLine()) != null) {
             allIntegers[i] = converter.fromString(line);
-            hashtable.put(l, allIntegers[i]);
+            //cast string as long
+            double hashKey = Double.parseDouble(line)/1000000;
+            System.out.println(hashKey);
+            hashtable.put(hashKey, allIntegers[i]);
             i++;
-            l++;
+            d++;
         }
-        System.out.println(i);
-        System.out.println(hashtable.get(3L));
+        return hashtable;
     }
 }
 
@@ -62,3 +93,4 @@ public class Main {
 //I can't afford to put all these numbers into an array on the computer. 3/8 update: yes, I can.
 //Going through the million in order, or looking at the twenty-thousand-one in order, is not going to
 //necessarily yield the maximum.
+//Searching number by number is incredibly slow, unless it's just the printing that's slow.
