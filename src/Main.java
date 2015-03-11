@@ -7,7 +7,9 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 
 /**
  * Created by kyleofori on 3/8/15.
@@ -27,57 +29,65 @@ public class Main {
     public static void main(String[] args) {
         Path path = Paths.get("/Users/kyleofori/Documents/Coursera/algo1-programming_prob-2sum.txt");
         Charset charset = Charset.forName("US-ASCII");
-        BigInteger[] allIntegers = new BigInteger[1000000];
+        List<BigInteger> allIntegers = new ArrayList<>();
         BigIntegerStringConverter converter = new BigIntegerStringConverter();
 
         try (BufferedReader reader = Files.newBufferedReader(path, charset)) {
             Hashtable hashtable = passValuesIntoHashtable(allIntegers, converter, reader);
             boolean isItThere;
             BigInteger t = new BigInteger("-10000");
+            int answer = 0;
 
-//            for (int i = -10000; i <= 10000; i++) {
+            for (int i = -10000; i <= 10000; i++) {
                 int a = 0;
                 do {
                     isItThere = false;
-                    BigInteger x = allIntegers[a];
+                    BigInteger x = allIntegers.get(a);
                     BigInteger y = t.subtract(x);
-                    BigInteger keyInBigIntForm = y.divide(new BigInteger("1000000"));
-                    String keyInStringForm = converter.toString(keyInBigIntForm);
-                    double key = Double.parseDouble(keyInStringForm);
+                    String yInStringForm = converter.toString(y);
+                    String tInStringForm = converter.toString(t);
+                    double tInDoubleForm = Double.parseDouble(tInStringForm);
+                    double keyTimesAMillion = Double.parseDouble(yInStringForm);
+                    double key = keyTimesAMillion/1000000;
                     Object weFoundY = hashtable.get(key);
                     if (weFoundY == null) {
                         a++;
                     } else {
                         isItThere = true;
                         System.out.println("Got it. a: " + a + "\n x: " + x + "\n y: " + y + "\n weFoundY: " + weFoundY
-                                + "\n keyInBigIntForm: " + keyInBigIntForm + "\n keyInStringForm: " + keyInStringForm
-                                + "\n key: " + key);
+                                + "\n keyInStringForm: " + yInStringForm + "\n key: " + key + "\n t: " + t);
+                        answer++;
+                        hashtable.remove(tInDoubleForm);
+                        hashtable.remove(key);
+                        allIntegers.remove(a);
+                        System.out.println(allIntegers.remove(y)); //I'm assuming this command actually removes y,
+                        // and doesn't just say that it would.
+
                     }
-                    if (a == 999999) {
-                        System.out.println("Not found.");
+                    if (a == allIntegers.size()) {
                         isItThere = true;
                     }
                 } while (!isItThere);
                 t = t.add(BigInteger.ONE);
-//            }
-
+            }
+            System.out.println(answer);
         } catch (IOException x) {
             System.err.format("IOException: %s%n", x);
         }
     }
 
-    private static Hashtable passValuesIntoHashtable(BigInteger[] allIntegers, BigIntegerStringConverter converter, BufferedReader reader) throws IOException {
+    private static Hashtable passValuesIntoHashtable(List<BigInteger> allIntegers, BigIntegerStringConverter converter, BufferedReader reader) throws IOException {
         String line;
         int i = 0;
         Double d = 0D;
         Hashtable<Double, BigInteger> hashtable = new Hashtable<>();
 
         while ((line = reader.readLine()) != null) {
-            allIntegers[i] = converter.fromString(line);
+            allIntegers.add(converter.fromString(line));
             //cast string as long
             double hashKey = Double.parseDouble(line)/1000000;
-            System.out.println(hashKey);
-            hashtable.put(hashKey, allIntegers[i]);
+            hashtable.put(hashKey, allIntegers.get(allIntegers.size()-1));
+            if(i==0) System.out.println(hashKey);
             i++;
             d++;
         }
